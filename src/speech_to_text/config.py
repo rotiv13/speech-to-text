@@ -4,7 +4,7 @@ import tomllib
 from dataclasses import dataclass, field
 from pathlib import Path
 
-DEFAULT_MODEL_PATH = "~/.local/share/speech-to-text/models/ggml-small.en.bin"
+DEFAULT_MODEL_PATH = "~/.local/share/speech-to-text/models/ggml-small.bin"
 
 
 @dataclass(frozen=True)
@@ -15,7 +15,9 @@ class HotkeysConfig:
 
 @dataclass(frozen=True)
 class ModelConfig:
-    name: str = "small.en"
+    # `small` is the multilingual variant — auto-detects per utterance.
+    # Use `small.en` (or `base.en`, etc.) for English-only / lower latency.
+    name: str = "small"
     path: str = DEFAULT_MODEL_PATH
 
 

@@ -2,6 +2,8 @@
 
 Local-first macOS speech-to-text dictation. Press a hotkey, speak, get text into whatever app is focused. Audio never leaves your machine — transcription runs locally via [whisper.cpp](https://github.com/ggerganov/whisper.cpp).
 
+Defaults to the multilingual `small` Whisper model, so it auto-detects per utterance and transcribes in whatever language you spoke (English, Portuguese, and ~97 others). Switch to `small.en` for English-only and slightly faster turnaround.
+
 ## Install
 
 ```bash
@@ -44,8 +46,10 @@ push_to_talk = "<cmd_r>"               # hold to record
 toggle = "<ctrl>+<shift>+<space>"      # tap to start/stop
 
 [model]
-name = "small.en"                      # tiny.en | base.en | small.en | medium.en
-path = "~/.local/share/speech-to-text/models/ggml-small.en.bin"
+# Multilingual: auto-detect per utterance. Use small.en/medium.en for
+# English-only & slightly better English accuracy.
+name = "small"                         # tiny | base | small | medium | large-v3
+path = "~/.local/share/speech-to-text/models/ggml-small.bin"
 
 [audio]
 min_duration_ms = 400                  # ignore taps under this length
