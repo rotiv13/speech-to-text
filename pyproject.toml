@@ -1,0 +1,34 @@
+[project]
+name = "speech-to-text"
+version = "0.1.0"
+description = "Local-first macOS speech-to-text dictation daemon"
+requires-python = ">=3.11"
+readme = "README.md"
+dependencies = [
+  "numpy>=1.26",
+  "sounddevice>=0.4.6",
+  "pynput>=1.7.7",
+  "pywhispercpp>=1.2.0",
+  "pyobjc-framework-Cocoa>=10.0",
+  "pyobjc-framework-Quartz>=10.0",
+]
+
+[project.scripts]
+stt = "speech_to_text.cli:main"
+
+[project.optional-dependencies]
+dev = ["pytest>=8.0", "pytest-mock>=3.12"]
+
+[build-system]
+requires = ["hatchling"]
+build-backend = "hatchling.build"
+
+[tool.hatch.build.targets.wheel]
+packages = ["src/speech_to_text"]
+
+[tool.hatch.build]
+include = ["src/speech_to_text/assets/**"]
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+addopts = "-v --strict-markers"
