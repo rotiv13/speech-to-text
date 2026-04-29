@@ -55,6 +55,7 @@ def test_full_happy_path(deps):
     d = _make_daemon(deps)
     d.on_ptt_press()
     d.on_ptt_release()
+    d.wait_idle()
     deps["audio"].stop.assert_called_once()
     deps["transcriber"].transcribe.assert_called_once()
     deps["paster"].paste.assert_called_once_with("hello world")
@@ -68,6 +69,7 @@ def test_too_short_recording_silently_returns_to_idle(deps):
     d = _make_daemon(deps, min_ms=400)
     d.on_ptt_press()
     d.on_ptt_release()
+    d.wait_idle()
     deps["transcriber"].transcribe.assert_not_called()
     deps["paster"].paste.assert_not_called()
     deps["notifier"].assert_not_called()
@@ -81,6 +83,7 @@ def test_empty_transcription_returns_to_idle_silently(deps):
     d = _make_daemon(deps)
     d.on_ptt_press()
     d.on_ptt_release()
+    d.wait_idle()
     deps["paster"].paste.assert_not_called()
     sound_calls = [c.args[0] for c in deps["sounds"].play.call_args_list]
     assert "error.wav" not in sound_calls
@@ -92,6 +95,7 @@ def test_paste_failure_plays_error_and_notifies(deps):
     d = _make_daemon(deps)
     d.on_ptt_press()
     d.on_ptt_release()
+    d.wait_idle()
     deps["sounds"].play.assert_any_call("error.wav")
     deps["notifier"].assert_called()
     assert d.state == State.IDLE
@@ -102,6 +106,7 @@ def test_transcription_exception_returns_to_idle_with_error(deps):
     d = _make_daemon(deps)
     d.on_ptt_press()
     d.on_ptt_release()
+    d.wait_idle()
     deps["sounds"].play.assert_any_call("error.wav")
     deps["notifier"].assert_called()
     deps["paster"].paste.assert_not_called()
@@ -119,6 +124,7 @@ def test_toggle_stops_recording_when_recording(deps):
     d = _make_daemon(deps)
     d.on_toggle()
     d.on_toggle()
+    d.wait_idle()
     deps["paster"].paste.assert_called_once()
     assert d.state == State.IDLE
 
@@ -128,6 +134,7 @@ def test_max_duration_hard_stops(deps):
     d = _make_daemon(deps, max_ms=300_000)
     d.on_ptt_press()
     d.on_max_duration_check()
+    d.wait_idle()
     deps["audio"].stop.assert_called_once()
 
 

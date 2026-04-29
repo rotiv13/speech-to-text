@@ -203,14 +203,31 @@ def _run_daemon_foreground() -> int:
         handlers=[logging.StreamHandler(), logging.FileHandler(LOG_FILE)],
     )
 
+    model_path = Path(cfg.model.path).expanduser()
+    if not model_path.exists():
+        msg = (
+            f"Model file not found: {model_path}. "
+            "Run `stt install` to download it."
+        )
+        log.error(msg)
+        notifications.notify("Speech-to-Text", msg)
+        return 1
+
     asset_dir = Path(__file__).parent / "assets" / "sounds"
     sounds = sounds_mod.Sounds(asset_dir=asset_dir, enabled=cfg.sounds.enabled)
     paster = Paster(restore_delay_ms=cfg.paste.restore_clipboard_delay_ms)
-    transcriber = Transcriber(cfg.model.path)
+    transcriber = Transcriber(str(model_path))
     audio = audio_mod.Recorder(
         sample_rate=cfg.audio.sample_rate,
         input_device=cfg.audio.input_device,
     )
+
+    try:
+        transcriber.load()
+    except Exception as e:
+        log.exception("Failed to load whisper model")
+        notifications.notify("Speech-to-Text", f"Failed to load model: {e}")
+        return 1
 
     daemon = Daemon(
         hotkeys=None,

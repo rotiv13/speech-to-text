@@ -1,24 +1,26 @@
 from speech_to_text.notifications import notify
 
 
-def test_notify_calls_osascript(mocker):
+def test_notify_calls_osascript_with_argv(mocker):
     fake = mocker.patch("speech_to_text.notifications.subprocess.run")
     notify("Title", "Body text")
     fake.assert_called_once()
     args = fake.call_args[0][0]
     assert args[0] == "osascript"
     assert args[1] == "-e"
-    script = args[2]
-    assert 'display notification "Body text"' in script
-    assert 'with title "Title"' in script
+    # Title and body are passed as argv to the script — not interpolated.
+    assert "--" in args
+    assert args[-2] == "Title"
+    assert args[-1] == "Body text"
 
 
-def test_notify_escapes_quotes(mocker):
+def test_notify_safely_passes_quotes_and_backslashes(mocker):
+    """Tricky chars in title/body must reach osascript verbatim, not escaped."""
     fake = mocker.patch("speech_to_text.notifications.subprocess.run")
-    notify('A "tricky" title', 'Body with "quotes"')
-    script = fake.call_args[0][0][2]
-    assert '\\"tricky\\"' in script
-    assert '\\"quotes\\"' in script
+    notify('A "tricky" title', 'Path: C:\\foo and "quotes"')
+    args = fake.call_args[0][0]
+    assert args[-2] == 'A "tricky" title'
+    assert args[-1] == 'Path: C:\\foo and "quotes"'
 
 
 def test_notify_swallows_errors(mocker):
