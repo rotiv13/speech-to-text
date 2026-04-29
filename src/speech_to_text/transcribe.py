@@ -30,10 +30,13 @@ class Transcriber:
             # Portuguese audio comes back as English-text "translation". We
             # explicitly request auto-detect so each utterance is transcribed
             # in its source language.
+            # whisper.cpp emits "unknown language 'auto'" if you pass that
+            # literal string, so use the empty-string sentinel which is its
+            # canonical "no language pin, auto-detect" value.
             self._model = Model(
                 self._model_path,
                 n_threads=self._n_threads,
-                language="auto",
+                language="",
             )
 
     def transcribe(self, samples: np.ndarray) -> str:

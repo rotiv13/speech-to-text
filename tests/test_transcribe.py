@@ -22,22 +22,23 @@ def test_loads_model_lazily_then_transcribes(mocker):
     fake_model_cls.assert_called_once_with(
         "/fake/model.bin",
         n_threads=mocker.ANY,
-        language="auto",
+        language="",
     )
     fake_model.transcribe.assert_called_once()
     np.testing.assert_array_equal(fake_model.transcribe.call_args[0][0], samples)
     assert text == "hello world"
 
 
-def test_model_constructed_with_auto_language(mocker):
-    """Regression: whisper.cpp defaults language to 'en'. Without explicit
-    'auto', a multilingual model force-transcribes Portuguese as English."""
+def test_model_constructed_with_empty_language_for_auto_detect(mocker):
+    """Regression: whisper.cpp defaults language to 'en'. Without an explicit
+    auto-detect sentinel, a multilingual model force-transcribes Portuguese
+    as English. Whisper.cpp uses the empty string as 'no language pin'."""
     fake_model_cls = mocker.patch("speech_to_text.transcribe.Model")
     t = Transcriber("/fake/model.bin")
     t.load()
     kwargs = fake_model_cls.call_args.kwargs
-    assert kwargs.get("language") == "auto", (
-        "Transcriber must pass language='auto' so multilingual models "
+    assert kwargs.get("language") == "", (
+        "Transcriber must pass language='' so multilingual models "
         "auto-detect per utterance instead of defaulting to English."
     )
 
