@@ -1,8 +1,8 @@
 # speech-to-text
 
-Local-first macOS speech-to-text dictation. Press a hotkey, speak, get text into whatever app is focused. Audio never leaves your machine — transcription runs locally via [whisper.cpp](https://github.com/ggerganov/whisper.cpp).
+Local-first macOS dictation. Hold a hotkey, speak any of 99 languages, get a transcript pasted into the focused app — powered by [whisper.cpp](https://github.com/ggerganov/whisper.cpp) running on-device. Audio never leaves your machine.
 
-Defaults to the multilingual `medium` Whisper model, so it auto-detects per utterance and transcribes in whatever language you spoke (English, Portuguese, and ~97 others). Switch to `small` for ~3x faster transcription if you don't need the extra accuracy on non-English variants.
+Defaults to the multilingual `medium` Whisper model with per-utterance auto-detection (English, Portuguese, and ~97 others). Swap to `small` for ~3× faster transcription if you don't need the extra accuracy on non-English variants.
 
 ## Install
 
