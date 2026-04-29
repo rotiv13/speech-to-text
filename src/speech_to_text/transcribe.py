@@ -24,7 +24,17 @@ class Transcriber:
         corrupt instead of degrading silently on the first dictation."""
         if self._model is None:
             log.info("Loading whisper model: %s", self._model_path)
-            self._model = Model(self._model_path, n_threads=self._n_threads)
+            # whisper.cpp's C-side `whisper_full_default_params` defaults
+            # `language` to "en", which forces English output regardless of
+            # what was actually spoken. For a multilingual model that means
+            # Portuguese audio comes back as English-text "translation". We
+            # explicitly request auto-detect so each utterance is transcribed
+            # in its source language.
+            self._model = Model(
+                self._model_path,
+                n_threads=self._n_threads,
+                language="auto",
+            )
 
     def transcribe(self, samples: np.ndarray) -> str:
         if samples.size == 0:
