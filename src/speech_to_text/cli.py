@@ -22,7 +22,7 @@ MODELS_DIR = DATA_DIR / "models"
 LOG_DIR = Path("~/Library/Logs/speech-to-text").expanduser()
 LOG_FILE = LOG_DIR / "daemon.log"
 
-DEFAULT_MODEL = "ggml-small.bin"
+DEFAULT_MODEL = "ggml-medium.bin"
 MODEL_URL = (
     "https://huggingface.co/ggerganov/whisper.cpp/resolve/main/" + DEFAULT_MODEL
 )
@@ -34,9 +34,9 @@ DEFAULT_CONFIG_BODY = textwrap.dedent("""\
 
     [model]
     # Multilingual default; auto-detects language per utterance.
-    # Swap to "small.en" + ggml-small.en.bin for English-only / lower latency.
-    name = "small"
-    path = "~/.local/share/speech-to-text/models/ggml-small.bin"
+    # Swap to "small" / "small.en" for ~3x faster inference if accuracy is fine.
+    name = "medium"
+    path = "~/.local/share/speech-to-text/models/ggml-medium.bin"
 
     [audio]
     sample_rate = 16000

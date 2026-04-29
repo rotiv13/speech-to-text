@@ -54,10 +54,12 @@ network calls, no API key, no per-minute cost.
 
 - **Push-to-talk:** hold Right Command (`⌘ Right`).
 - **Toggle:** Control+Shift+Space (`⌃⇧ Space`).
-- **Model:** `ggml-small.bin` (~488 MB, multilingual). Whisper auto-detects
-  language per utterance — no explicit language config required.
-  English-only `ggml-small.en.bin` is also supported via config swap for
-  users who only dictate English and want a slightly snappier model.
+- **Model:** `ggml-medium.bin` (~1.5 GB, multilingual). Whisper auto-detects
+  language per utterance — no explicit language config required. `small`
+  was the original default but proved unreliable on European Portuguese;
+  `medium` handles it accurately at the cost of ~2-3 s inference vs ~1 s.
+  Smaller variants (`small`, `small.en`, `base.en`) are still supported via
+  config swap for users who want lower latency.
 - **Audio cues:** on for record-start, paste-success, and errors.
 - **Notifications:** off for normal flow. Shown only for errors the user needs
   to know about: permission issues, paste failures, and transcription
@@ -195,7 +197,7 @@ speech-to-text/
 4. **Transcribe:** `transcribe.transcribe(samples)` runs `whisper.cpp` on
    the array (already in 16 kHz mono float32, the format `whisper.cpp`
    wants — no resampling). Returns plain text. Typical latency: ~1 s for
-   `small` on a 30 s clip on Apple Silicon.
+   `medium` on a 30 s clip on Apple Silicon.
 5. **Paste:** daemon transitions `TRANSCRIBING → PASTING`. Snapshot current
    clipboard for all types (string, RTF, image), put text on clipboard,
    simulate `⌘V` via `CGEventPost`, sleep 200 ms (so the target app has
@@ -276,7 +278,7 @@ user upgrades Homebrew Python.
 $ uv tool install speech-to-text
 $ stt install
    ✓ Wrote default config to ~/.config/speech-to-text/config.toml
-   ✓ Downloaded ggml-small.bin (488 MB) to ~/.local/share/speech-to-text/models/
+   ✓ Downloaded ggml-medium.bin (1.5 GB) to ~/.local/share/speech-to-text/models/
    ✓ Wrote LaunchAgent to ~/Library/LaunchAgents/com.user.speechtotext.plist
    ⚠ macOS will prompt for Microphone and Accessibility permissions on first run.
      Open System Settings → Privacy & Security to grant them if you miss the prompt.
@@ -314,8 +316,8 @@ push_to_talk = "<cmd_r>"        # hold to record
 toggle       = "<ctrl>+<shift>+<space>"  # tap to start/stop
 
 [model]
-name = "small"                  # multilingual; use small.en/medium.en for English-only
-path = "~/.local/share/speech-to-text/models/ggml-small.bin"
+name = "medium"                 # multilingual; use small for ~3x faster inference
+path = "~/.local/share/speech-to-text/models/ggml-medium.bin"
 
 [audio]
 sample_rate = 16000
