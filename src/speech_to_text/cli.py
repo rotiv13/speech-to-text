@@ -197,11 +197,20 @@ def _run_daemon_foreground() -> int:
 
     cfg = config_mod.load(CONFIG_FILE)
     LOG_DIR.mkdir(parents=True, exist_ok=True)
+    # launchd already redirects stdout+stderr to LOG_FILE via the plist, so a
+    # bare StreamHandler is enough; adding a FileHandler too produces every
+    # line twice in the log.
     logging.basicConfig(
         level=getattr(logging, cfg.logging.level),
         format="%(asctime)s %(levelname)s %(name)s: %(message)s",
-        handlers=[logging.StreamHandler(), logging.FileHandler(LOG_FILE)],
+        handlers=[logging.StreamHandler()],
     )
+
+    # pynput's macOS backend logs "This process is not trusted!" at WARNING
+    # level when Accessibility permission is missing, then silently delivers
+    # no key events. Catch that warning and surface it via notification + log
+    # so the daemon doesn't pretend to be working.
+    accessibility_denied = _install_accessibility_watcher()
 
     model_path = Path(cfg.model.path).expanduser()
     if not model_path.exists():
@@ -248,6 +257,22 @@ def _run_daemon_foreground() -> int:
         on_toggle=daemon.on_toggle,
     )
     hotkeys.start()
+
+    # pynput's trust check happens shortly after listener.start(), give it a
+    # moment then check whether the warning fired.
+    import time as _time
+    _time.sleep(0.5)
+    if accessibility_denied.is_set():
+        msg = (
+            "Accessibility permission denied. "
+            "Open System Settings → Privacy & Security → Accessibility "
+            "and enable Python, then run `stt disable && stt enable`."
+        )
+        log.error(msg)
+        notifications.notify("Speech-to-Text", msg)
+        hotkeys.stop()
+        return 1
+
     log.info(
         "Daemon ready. Push-to-talk: %s | Toggle: %s",
         cfg.hotkeys.push_to_talk,
@@ -261,6 +286,22 @@ def _run_daemon_foreground() -> int:
         log.info("Shutting down")
         hotkeys.stop()
     return 0
+
+
+def _install_accessibility_watcher() -> "object":
+    """Watch pynput's logger for the 'not trusted' warning and signal an
+    event when seen. Returns a `threading.Event` that gets set if pynput
+    reports its process is missing Accessibility permission."""
+    import threading
+    denied = threading.Event()
+
+    class _Watcher(logging.Handler):
+        def emit(self, record):
+            if "not trusted" in record.getMessage().lower():
+                denied.set()
+
+    logging.getLogger("pynput").addHandler(_Watcher())
+    return denied
 
 
 if __name__ == "__main__":
