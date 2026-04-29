@@ -30,3 +30,4 @@ include = ["src/speech_to_text/assets/**"]
 [tool.pytest.ini_options]
 testpaths = ["tests"]
 addopts = "-v --strict-markers"
+markers = ["integration: slow tests that hit real whisper.cpp"]
