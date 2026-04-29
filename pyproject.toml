@@ -25,8 +25,6 @@ build-backend = "hatchling.build"
 
 [tool.hatch.build.targets.wheel]
 packages = ["src/speech_to_text"]
-
-[tool.hatch.build]
 include = ["src/speech_to_text/assets/**"]
 
 [tool.pytest.ini_options]
